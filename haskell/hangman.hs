@@ -59,7 +59,8 @@ hangman :: IO ()
 hangman = do
             putStrLn "Type the secret word below"
             putStr "> "
-            word <- withEcho False getLine
+            -- word <- withEcho False getLine
+            word <- getPassword
             putChar '\n'
             -- guess word 10
             guessAcc word "" 10
@@ -70,6 +71,15 @@ withEcho :: Bool -> IO a -> IO a
 withEcho echo action = do
   old <- hGetEcho stdin
   bracket_ (hSetEcho stdin echo) (hSetEcho stdin old) action
+
+getPassword :: IO String
+getPassword = do
+                c <- getChar <* putStr "\b*"
+                if c == '\n'
+                  then return []
+                  else do
+                    rest <- getPassword
+                    return (c:rest)
 
 mdiff          :: String -> String -> String
 mdiff [] []     = ""
@@ -102,7 +112,6 @@ guessAcc secret inputs attempts
                 = do
                     putStr "Make your guess: > "
                     input <- getChar
-                    putChar '\n'
                     if all (\x -> x `elem` (input:inputs)) secret
                       then do
                         putStrLn "You have guessed all letters"
