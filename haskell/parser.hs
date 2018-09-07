@@ -80,8 +80,8 @@ many1 p = do v  <- p
              vs <- many p
              return' (v:vs)
 
-expr_2 :: Parser Int
-expr_2 = do
+expr_ext1 :: Parser Int
+expr_ext1 = do
               d  <- digit
               let x = (digitToInt d)
               ds <- many (do char '+'
@@ -90,3 +90,23 @@ expr_2 = do
                              return' y
                           )
               return' (sum (x:ds))
+
+expr_ext2 :: Parser Int
+expr_ext2  = do
+            nums <- many (digit)
+            let num = read nums :: Int
+            ds <- many (do char '+'
+                           rhs <- many (digit)
+                           let rhsi = read rhs :: Int
+                           return' rhsi 
+                        )
+            return' (sum (num:ds))
+
+
+-- Parses many digits "12+13"
+expr_2 :: Parser Int
+expr_2 = do
+          d1       <- many (digit)
+          let num1 = read d1 :: Int
+          num2     <- (do {char '+'; expr_2}) +++ return' 0
+          return' (num1 + num2)
